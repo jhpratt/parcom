@@ -1,0 +1,170 @@
+name: Build
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["**"]
+    paths-ignore:
+      - "**.md"
+      - "**/LICENSE-Apache"
+      - "**/LICENSE-MIT"
+      - .github/FUNDING.yml
+      - .editorconfig
+      - .gitignore
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**/LICENSE-Apache"
+      - "**/LICENSE-MIT"
+      - .github/FUNDING.yml
+      - .editorconfig
+      - .gitignore
+
+jobs:
+  test:
+    name: Test (${{ matrix.rust.name }})
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) || github.event_name == 'push'
+    strategy:
+      matrix:
+        rust:
+          - { version: "1.76.0", name: MSRV }
+          - { version: stable, name: stable }
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Cache cargo output
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust.version }}
+
+      - name: Install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
+
+      - name: Test
+        run: cargo hack test --feature-powerset --skip default
+
+  miri:
+    name: Test (miri)
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) || github.event_name == 'push'
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Cache cargo output
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri
+
+      - name: Test
+        run: cargo miri test --all-features
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance -Zmiri-symbolic-alignment-check
+
+  fmt:
+    name: Formatting
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) || github.event_name == 'push'
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) || github.event_name == 'push'
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Cache cargo output
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Run clippy
+        run: cargo clippy --all-features
+
+  documentation:
+    name: Documentation
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) || github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache cargo output
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Generate documentation
+        run: cargo doc --all-features --no-deps
+        env:
+          RUSTDOCFLAGS: --cfg __parcom_01_docs
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork) || github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Cache cargo output
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Generate coverage report
+        run: |
+          cargo llvm-cov clean --workspace
+          cargo llvm-cov test --all-features --lcov > lcov.txt
+          cargo llvm-cov report --lcov > lcov.txt
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./lcov.txt
