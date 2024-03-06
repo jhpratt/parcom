@@ -165,6 +165,8 @@ jobs:
           cargo llvm-cov report --lcov > lcov.txt
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./lcov.txt
+          slug: jhpratt/parcom
+          token: ${{ secrets.CODECOV_TOKEN }}
