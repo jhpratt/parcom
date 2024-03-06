@@ -3,13 +3,13 @@ name = "parcom"
 version = "0.1.0"
 authors = ["Jacob Pratt <jacob@jhpratt.dev>"]
 edition = "2021"
-rust-version = "1.76.0"                          # TODO
+rust-version = "1.76.0"
 repository = "https://github.com/jhpratt/parcom"
-keywords = []                                    # TODO
-categories = []                                  # TODO
+keywords = ["parser", "combinator", "parsing", "parser-combinators"]
+categories = ["no-std", "no-std::no-alloc", "parsing"]
 readme = "README.md"
 license = "MIT OR Apache-2.0"
-description = ""                                 # TODO
+description = "A byte-based, high-efficiency parser combinator library"
 include = ["src/**/*", "LICENSE-*", "README.md"]
 
 [package.metadata.docs.rs]
@@ -22,8 +22,8 @@ rustdoc-args = ["--cfg", "__parcom_01_docs", "--generate-link-to-definition"]
 
 [features]
 default = ["std"]
-std = ["alloc"]
 alloc = []
+std = ["alloc"]
 
 # Deny-by-default lints: These are lints that indicate a lack of compiler guarantees, future
 # incompatibility (with no guarantees in the meantime) introduce surprising behavior, or are likely
