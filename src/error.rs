@@ -12,6 +12,7 @@ pub enum Error {
     AsciiAlphanumeric(AsciiAlphanumeric),
     AsciiWhitespace(AsciiWhitespace),
     AsciiHexDigit(AsciiHexDigit),
+    AsciiInteger(AsciiInteger),
     Byte(Byte),
     NotEndOfInput(NotEndOfInput),
     NonMatchingInput(NonMatchingInput),
@@ -114,4 +115,5 @@ declare_parcom_error! {
     pub struct NotEndOfInput;
     pub struct NonMatchingInput;
     pub struct Utf8Char;
+    pub struct AsciiInteger;
 }

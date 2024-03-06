@@ -24,10 +24,7 @@ where
                         count += 1;
                         input = parsed_item.input();
                     }
-                    Ok(_) => {
-                        return Ok(ParsedItem::from_parts(input, count));
-                    }
-                    Err(_) => {
+                    Ok(_) | Err(_) => {
                         return Ok(ParsedItem::from_parts(input, count));
                     }
                 }

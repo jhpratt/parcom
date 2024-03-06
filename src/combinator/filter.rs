@@ -20,7 +20,7 @@ where
 mod tests {
     use super::*;
     use crate::parser::{any_byte, n_bytes};
-    use crate::{error, ParsedItem, Parser};
+    use crate::ParsedItem;
 
     #[test]
     #[cfg_attr(coverage, coverage(off))]

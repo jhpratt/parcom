@@ -6,7 +6,7 @@ pub fn digit(input: &[u8]) -> ParserResult<'_, u8, Either<error::AsciiDigit, err
     any_byte
         .filter_map(|b| {
             b.is_ascii_digit()
-                .then_some(b - b'0')
+                .then(|| b - b'0')
                 .ok_or(error::AsciiDigit)
         })
         .parse(input)

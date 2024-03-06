@@ -7,16 +7,18 @@
 // temporary
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "std")))]
 extern crate alloc;
 
 pub mod combinator;
+mod either;
 pub mod error;
 mod parsed_item;
 pub mod parser;
 
 #[doc(inline)]
 pub use self::combinator::Combinator;
+pub use self::either::Either;
 #[doc(inline)]
 pub use self::error::Error;
 pub use self::parsed_item::ParsedItem;
@@ -24,12 +26,6 @@ pub use self::parsed_item::ParsedItem;
 pub use self::parser::{Parser, ParserResult};
 
 pub type Result<T, E = Error> = core::result::Result<T, E>;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Either<A, B> {
-    A(A),
-    B(B),
-}
 
 #[macro_export]
 macro_rules! seq {

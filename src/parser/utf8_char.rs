@@ -1,8 +1,13 @@
 use crate::{error, hrtb_hack, Either, ParsedItem, Parser};
 
+#[rustfmt::skip] // rust-lang/rustfmt#3599
 pub fn utf8_char(
     c: char,
-) -> impl for<'input> Parser<'input, Output = char, Error = Either<error::Utf8Char, error::EndOfInput>> {
+) -> impl for<'input> Parser<
+    'input,
+    Output = char,
+    Error = Either<error::Utf8Char, error::EndOfInput>,
+> {
     hrtb_hack(move |input: &[u8]| {
         if input.len() < c.len_utf8() {
             return Err(Either::B(error::EndOfInput));
@@ -56,15 +61,27 @@ mod tests {
     #[test]
     #[cfg_attr(coverage, coverage(off))]
     fn test_utf8_char_invalid() {
-        assert_eq!(utf8_char('a').parse(b"bcd"), Err(Either::A(error::Utf8Char)));
+        assert_eq!(
+            utf8_char('a').parse(b"bcd"),
+            Err(Either::A(error::Utf8Char))
+        );
     }
 
     #[test]
     #[cfg_attr(coverage, coverage(off))]
     fn test_utf8_char_end_of_input() {
         assert_eq!(utf8_char('$').parse(b""), Err(Either::B(error::EndOfInput)));
-        assert_eq!(utf8_char('£').parse(b"a"), Err(Either::B(error::EndOfInput)));
-        assert_eq!(utf8_char('€').parse(b"ab"), Err(Either::B(error::EndOfInput)));
-        assert_eq!(utf8_char('🦀').parse(b"abc"), Err(Either::B(error::EndOfInput)));
+        assert_eq!(
+            utf8_char('£').parse(b"a"),
+            Err(Either::B(error::EndOfInput))
+        );
+        assert_eq!(
+            utf8_char('€').parse(b"ab"),
+            Err(Either::B(error::EndOfInput))
+        );
+        assert_eq!(
+            utf8_char('🦀').parse(b"abc"),
+            Err(Either::B(error::EndOfInput))
+        );
     }
 }

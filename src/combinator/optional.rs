@@ -1,17 +1,16 @@
 use core::convert::Infallible;
 
-use crate::{Combinator, ParsedItem, Parser};
+use crate::{ParsedItem, Parser};
 
-pub const fn optional<'input, P>()
--> impl Combinator<'input, P, Output = Option<P::Output>, Error = Infallible> + Copy
+pub const fn optional<'input, P>(
+    parser: P,
+) -> impl Parser<'input, Output = Option<P::Output>, Error = Infallible>
 where
     P: Parser<'input>,
 {
-    move |parser: P| {
-        move |input| match parser.parse(input) {
-            Ok(parsed_item) => Ok(parsed_item.map_value(Some)),
-            Err(_) => Ok(ParsedItem::from_parts(input, None)),
-        }
+    move |input| match parser.parse(input) {
+        Ok(parsed_item) => Ok(parsed_item.map_value(Some)),
+        Err(_) => Ok(ParsedItem::from_parts(input, None)),
     }
 }
 
@@ -19,7 +18,6 @@ where
 mod tests {
     use super::*;
     use crate::parser::any_byte;
-    use crate::ParsedItem;
 
     #[test]
     #[cfg_attr(coverage, coverage(off))]

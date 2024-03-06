@@ -1,16 +1,10 @@
-use crate::{Combinator, Parser};
+use crate::Parser;
 
-#[rustfmt::skip] // rust-lang/rustfmt#3599
-pub const fn discard<'input, P>() -> impl Combinator<
-    'input,
-    P,
-    Output = (),
-    Error = P::Error,
-> + Copy
+pub fn discard<'input, P>(parser: P) -> impl Parser<'input, Output = (), Error = P::Error>
 where
     P: Parser<'input>,
 {
-    move |parser: P| parser.map(|_| ())
+    parser.map(|_| ())
 }
 
 #[cfg(test)]

@@ -12,9 +12,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Parser;
 
     #[test]
+    #[cfg_attr(coverage, coverage(off))]
     fn test_success() {
         assert_eq!(
             success(()).parse(b"abc").map(ParsedItem::into_parts),
